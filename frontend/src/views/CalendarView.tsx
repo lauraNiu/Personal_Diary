@@ -1,13 +1,19 @@
 import { useStore } from '../store';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarClock } from 'lucide-react';
 import { PRIORITY_COLORS } from '../utils';
 import { Tooltip } from '../components/Tooltip';
+import { Meetings as MeetingsAPI } from '../api';
+import type { Meeting } from '../types';
 
 export function CalendarView() {
-  const { tasks, openTaskDetail, selectedSpaceId } = useStore();
+  const { tasks, openTaskDetail, selectedSpaceId, setCurrentView } = useStore();
   const [month, setMonth] = useState(dayjs());
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  useEffect(() => {
+    MeetingsAPI.list(selectedSpaceId === 'all' ? undefined : selectedSpaceId).then(setMeetings);
+  }, [selectedSpaceId, month.format('YYYY-MM')]);
 
   let visible = tasks;
   if (selectedSpaceId !== 'all') visible = visible.filter(t => t.space_id === selectedSpaceId);
@@ -36,6 +42,7 @@ export function CalendarView() {
         ))}
         {days.map(d => {
           const dueTasks = visible.filter(t => t.due_date && dayjs(t.due_date).isSame(d, 'day'));
+          const dayMeetings = meetings.filter(m => dayjs(m.scheduled_at).isSame(d, 'day'));
           const isToday = d.isSame(dayjs(), 'day');
           const inMonth = d.month() === month.month();
           return (
@@ -45,7 +52,19 @@ export function CalendarView() {
                 {d.date()}
               </div>
               <div className="mt-1 space-y-0.5">
-                {dueTasks.slice(0, 3).map(t => (
+                {dayMeetings.slice(0, 2).map(m => (
+                  <Tooltip key={m.id} title={`📅 ${m.title}`}
+                           desc={`${dayjs(m.scheduled_at).format('HH:mm')} · ${m.duration_minutes}min${m.location ? ' · ' + m.location : ''}`}>
+                    <div onClick={() => setCurrentView('meetings')}
+                         className="text-[10px] truncate px-1 py-0.5 rounded cursor-pointer
+                                    bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300
+                                    flex items-center gap-1">
+                      <CalendarClock className="w-2.5 h-2.5 shrink-0" />
+                      <span className="truncate">{dayjs(m.scheduled_at).format('HH:mm')} {m.title}</span>
+                    </div>
+                  </Tooltip>
+                ))}
+                {dueTasks.slice(0, 3 - Math.min(2, dayMeetings.length)).map(t => (
                   <Tooltip key={t.id} title={t.title} desc={t.description}>
                     <div onClick={() => openTaskDetail(t.id)}
                          className="text-[10px] truncate px-1 py-0.5 rounded cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -54,8 +73,8 @@ export function CalendarView() {
                     </div>
                   </Tooltip>
                 ))}
-                {dueTasks.length > 3 && (
-                  <div className="text-[10px] text-slate-500">+{dueTasks.length - 3}</div>
+                {(dueTasks.length + dayMeetings.length) > 3 && (
+                  <div className="text-[10px] text-slate-500">+{dueTasks.length + dayMeetings.length - 3}</div>
                 )}
               </div>
             </div>

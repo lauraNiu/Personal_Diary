@@ -159,6 +159,9 @@ CREATE TABLE IF NOT EXISTS meetings (
   notes TEXT,
   action_items TEXT DEFAULT '[]',
   recurrence TEXT,
+  reminder_minutes INTEGER DEFAULT 30,
+  reminder_sent INTEGER DEFAULT 0,
+  location TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -259,7 +262,18 @@ async def init_db():
 
 
 async def _auto_migrate(db):
-    """旧版本数据无 user_id，迁移到默认 demo 账号。"""
+    """旧版本数据迁移：① 加 user_id ② meeting 表加新字段。"""
+    # 给 meetings 表补列（SQLite 不支持 IF NOT EXISTS 加列，try/except）
+    for col_def in (
+        "ALTER TABLE meetings ADD COLUMN reminder_minutes INTEGER DEFAULT 30",
+        "ALTER TABLE meetings ADD COLUMN reminder_sent INTEGER DEFAULT 0",
+        "ALTER TABLE meetings ADD COLUMN location TEXT",
+    ):
+        try:
+            await db.execute(col_def)
+        except Exception:
+            pass
+
     cur = await db.execute("SELECT COUNT(*) FROM tasks WHERE user_id IS NULL OR user_id = ''")
     legacy = (await cur.fetchone())[0]
     if legacy == 0:

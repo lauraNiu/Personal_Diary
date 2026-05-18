@@ -1,5 +1,8 @@
 import json
+import zipfile
+from pathlib import Path
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import FileResponse
 from database import get_db, row_to_dict, new_id, now_iso
 from models import PaperIn
 from dependencies import current_user_id
@@ -105,3 +108,75 @@ async def sync_paper(pid: str, uid: str = Depends(current_user_id)):
         await db.close()
     from services.overleaf_service import sync_one_paper
     return await sync_one_paper(pid)
+
+
+async def _verify_snapshot_access(sid: str, uid: str) -> dict:
+    """验证快照属于该用户，返回快照行 dict。"""
+    db = await get_db()
+    try:
+        cur = await db.execute(
+            """SELECT ps.* FROM paper_snapshots ps
+               JOIN papers p ON p.id = ps.paper_id
+               WHERE ps.id=? AND p.user_id=?""",
+            (sid, uid)
+        )
+        row = await cur.fetchone()
+        if not row:
+            raise HTTPException(404, "快照不存在或无权访问")
+        return row_to_dict(row)
+    finally:
+        await db.close()
+
+
+@router.get("/snapshots/{sid}/download")
+async def download_snapshot(sid: str, uid: str = Depends(current_user_id)):
+    """下载快照 ZIP 文件。"""
+    snap = await _verify_snapshot_access(sid, uid)
+    path = Path(snap["file_path"])
+    if not path.exists():
+        raise HTTPException(404, "快照文件已丢失")
+    return FileResponse(
+        path,
+        media_type="application/zip",
+        filename=f"{snap['version_label']}_{snap['snapshot_at'][:10]}.zip",
+    )
+
+
+@router.get("/snapshots/{sid}/files")
+async def list_snapshot_files(sid: str, uid: str = Depends(current_user_id)):
+    """列出快照 ZIP 内的文件结构。"""
+    snap = await _verify_snapshot_access(sid, uid)
+    path = Path(snap["file_path"])
+    if not path.exists():
+        raise HTTPException(404, "快照文件已丢失")
+    files = []
+    with zipfile.ZipFile(path) as zf:
+        for info in zf.infolist():
+            if info.is_dir():
+                continue
+            files.append({
+                "name": info.filename,
+                "size": info.file_size,
+                "compressed": info.compress_size,
+            })
+    return {"files": sorted(files, key=lambda x: x["name"]), "total": len(files)}
+
+
+@router.get("/snapshots/{sid}/file")
+async def read_snapshot_file(sid: str, path: str, uid: str = Depends(current_user_id)):
+    """读取快照 ZIP 内某个文件的内容（仅文本文件）。"""
+    snap = await _verify_snapshot_access(sid, uid)
+    zip_path = Path(snap["file_path"])
+    if not zip_path.exists():
+        raise HTTPException(404, "快照文件已丢失")
+    with zipfile.ZipFile(zip_path) as zf:
+        try:
+            raw = zf.read(path)
+        except KeyError:
+            raise HTTPException(404, f"快照内无 {path}")
+    # 二进制（图片/pdf 等）只返回大小
+    try:
+        text = raw.decode("utf-8")
+        return {"content": text, "binary": False, "size": len(raw)}
+    except UnicodeDecodeError:
+        return {"content": None, "binary": True, "size": len(raw)}

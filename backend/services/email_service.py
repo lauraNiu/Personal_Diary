@@ -121,6 +121,62 @@ async def send_weekly_review():
     _send(f"📊 周回顾 · {date.today().isoformat()}", html)
 
 
+def send_meeting_reminder_email(meeting: dict, attendee_names: list[str], to: str = None) -> bool:
+    """发送会议提醒邮件（被 scheduler 调用）。"""
+    sched = meeting.get("scheduled_at", "")
+    # 解析时间
+    try:
+        dt = datetime.fromisoformat(sched.replace("Z", ""))
+        time_str = dt.strftime("%Y-%m-%d %H:%M")
+        # 计算多久后开始
+        delta = dt - datetime.now()
+        mins = int(delta.total_seconds() / 60)
+        if mins > 0:
+            countdown = f"{mins} 分钟后"
+        elif mins == 0:
+            countdown = "马上就要开始"
+        else:
+            countdown = f"已开始 {-mins} 分钟"
+    except Exception:
+        time_str = sched
+        countdown = ""
+
+    duration = meeting.get("duration_minutes", 60)
+    location = meeting.get("location") or "未设置"
+    agenda = (meeting.get("agenda") or "").strip() or "（无）"
+    attendees_html = ", ".join(attendee_names) if attendee_names else "（无）"
+
+    subject = f"⏰ 会议提醒 · {countdown} · {meeting.get('title', '会议')}"
+    html = f"""
+    <div style="max-width:600px;margin:0 auto;font-family:-apple-system,sans-serif;color:#0F172A;line-height:1.6">
+      <div style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;padding:24px;border-radius:8px 8px 0 0">
+        <div style="font-size:14px;opacity:0.9">⏰ {countdown}</div>
+        <h1 style="margin:8px 0 0 0;font-size:22px">{meeting.get('title', '')}</h1>
+      </div>
+      <div style="border:1px solid #E2E8F0;border-top:none;border-radius:0 0 8px 8px;padding:20px;background:white">
+        <table style="width:100%;font-size:14px;border-collapse:collapse">
+          <tr><td style="padding:6px 0;color:#64748B;width:80px">🕐 时间</td>
+              <td style="padding:6px 0"><strong>{time_str}</strong></td></tr>
+          <tr><td style="padding:6px 0;color:#64748B">⏱ 时长</td>
+              <td style="padding:6px 0">{duration} 分钟</td></tr>
+          <tr><td style="padding:6px 0;color:#64748B">📍 地点</td>
+              <td style="padding:6px 0">{location}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748B">👥 参会人</td>
+              <td style="padding:6px 0">{attendees_html}</td></tr>
+        </table>
+        <div style="margin-top:16px;padding:12px;background:#F8FAFC;border-radius:6px;border-left:3px solid #6366F1">
+          <div style="font-size:12px;color:#64748B;margin-bottom:4px">📋 议程</div>
+          <div style="font-size:14px;white-space:pre-line">{agenda}</div>
+        </div>
+      </div>
+      <p style="color:#94A3B8;font-size:12px;text-align:center;margin-top:16px">
+        来自 Personal Life OS · 不想再收到此提醒？在会议详情里关闭提醒
+      </p>
+    </div>
+    """
+    return _send(subject, html, to=to)
+
+
 async def send_test_email():
     """测试邮件配置。"""
     return _send("✅ Personal Life OS 邮件测试",

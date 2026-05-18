@@ -119,6 +119,9 @@ export interface Meeting {
   agenda?: string;
   notes?: string;
   action_items: any[];
+  reminder_minutes: number;
+  reminder_sent: number;
+  location?: string;
   created_at: string;
 }
 
@@ -148,6 +151,6 @@ export interface AIParsed {
 }
 
 export type ViewName =
-  | 'kanban' | 'gantt' | 'calendar' | 'stats'
+  | 'kanban' | 'gantt' | 'calendar' | 'meetings' | 'stats'
   | 'eisenhower' | 'capacity' | 'heatmap'
   | 'collaborator' | 'paper' | 'focus';

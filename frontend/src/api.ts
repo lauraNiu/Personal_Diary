@@ -69,6 +69,16 @@ export const Papers = {
   delete: (id: string) => api.delete(`/api/papers/${id}`).then(r => r.data),
   sync: (id: string) => api.post(`/api/papers/${id}/sync`).then(r => r.data),
   snapshots: (id: string) => api.get<PaperSnapshot[]>(`/api/papers/${id}/snapshots`).then(r => r.data),
+  snapshotFiles: (sid: string) =>
+    api.get<{ files: { name: string; size: number; compressed: number }[]; total: number }>(
+      `/api/papers/snapshots/${sid}/files`).then(r => r.data),
+  snapshotFile: (sid: string, path: string) =>
+    api.get<{ content: string | null; binary: boolean; size: number }>(
+      `/api/papers/snapshots/${sid}/file`, { params: { path } }).then(r => r.data),
+  snapshotDownloadUrl: (sid: string) => {
+    const token = localStorage.getItem('life-os-token') || '';
+    return `${api.defaults.baseURL}/api/papers/snapshots/${sid}/download`;
+  },
 };
 
 // Meetings
@@ -77,6 +87,7 @@ export const Meetings = {
   create: (data: Partial<Meeting>) => api.post<Meeting>('/api/meetings', data).then(r => r.data),
   update: (id: string, data: Partial<Meeting>) => api.put<Meeting>(`/api/meetings/${id}`, data).then(r => r.data),
   delete: (id: string) => api.delete(`/api/meetings/${id}`).then(r => r.data),
+  testReminder: (id: string) => api.post(`/api/meetings/${id}/test-reminder`).then(r => r.data),
 };
 
 // Tags

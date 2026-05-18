@@ -107,12 +107,14 @@ class MeetingIn(BaseModel):
     title: str
     space_id: Optional[str] = None
     project_id: Optional[str] = None
-    scheduled_at: str
+    scheduled_at: str                            # ISO 字符串，如 "2026-05-20T14:30"
     duration_minutes: int = 60
     attendee_ids: List[str] = Field(default_factory=list)
     agenda: Optional[str] = None
     notes: Optional[str] = None
     action_items: List[Dict[str, Any]] = Field(default_factory=list)
+    reminder_minutes: int = 30                   # 会前 N 分钟提醒，0=不提醒
+    location: Optional[str] = None               # 地点 / 会议室 / Zoom 链接
 
 
 class AIParseIn(BaseModel):

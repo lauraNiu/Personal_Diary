@@ -14,6 +14,7 @@ import { NotificationPanel } from './components/NotificationPanel';
 import { KanbanView } from './views/KanbanView';
 import { GanttView } from './views/GanttView';
 import { CalendarView } from './views/CalendarView';
+import { MeetingsView } from './views/MeetingsView';
 import { StatsView } from './views/StatsView';
 import { EisenhowerView } from './views/EisenhowerView';
 import { CapacityView } from './views/CapacityView';
@@ -24,10 +25,10 @@ import { FocusView } from './views/FocusView';
 import { Toaster } from 'react-hot-toast';
 
 const VIEWS = [
-  KanbanView, GanttView, CalendarView, StatsView, EisenhowerView,
+  KanbanView, GanttView, CalendarView, MeetingsView, StatsView, EisenhowerView,
   CapacityView, HeatmapView, CollaboratorView, PaperHubView, FocusView,
 ];
-const VIEW_NAMES = ['kanban', 'gantt', 'calendar', 'stats', 'eisenhower',
+const VIEW_NAMES = ['kanban', 'gantt', 'calendar', 'meetings', 'stats', 'eisenhower',
                     'capacity', 'heatmap', 'collaborator', 'paper', 'focus'] as const;
 
 export default function App() {
