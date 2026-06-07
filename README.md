@@ -2,20 +2,155 @@
 
 > AI 驱动的个人生命周期管理系统：学术科研 · 公司工作 · 个人生活
 
-[![](https://img.shields.io/badge/license-MIT-blue)]() [![](https://img.shields.io/badge/python-3.12+-green)]() [![](https://img.shields.io/badge/react-18-61dafb)]() [![](https://img.shields.io/badge/AI-GLM--5.1-orange)]()
+[![](https://img.shields.io/badge/license-MIT-blue)]() [![](https://img.shields.io/badge/python-3.12+-green)]() [![](https://img.shields.io/badge/react-19-61dafb)]() [![](https://img.shields.io/badge/AI-GLM--5.1-orange)]()
 
 ---
 
 ## 🚀 快速开始
 
+### 前提条件
+
+| 工具 | 最低版本 | 检查命令 |
+|------|----------|----------|
+| Python | 3.10+ | `python --version` |
+| Node.js | 18+ | `node --version` |
+| npm | 9+ | `npm --version` |
+
+> **Windows 用户**：推荐使用 [Python 官网](https://www.python.org/downloads/) 安装 Python，勾选 "Add to PATH"；使用 [Node.js 官网](https://nodejs.org/) 安装 Node。
+
+---
+
+### 方式一：Mac / Linux 一键启动
+
 ```bash
-cd todo-app
+git clone https://github.com/lauraNiu/Personal_Diary.git
+cd Personal_Diary
+
+# 复制环境变量（首次运行必做）
+cp backend/.env.example backend/.env
+
+# 一键启动前后端
 ./start.sh
 ```
 
-首次运行会自动安装 Python + Node 依赖（约 1-2 分钟），然后访问 http://localhost:5173
+脚本会自动安装 Python + Node 依赖（首次约 1-2 分钟），完成后访问：
+- 前端：http://localhost:5173
+- 后端 API 文档：http://localhost:8000/docs
 
-**首次使用**：进入登录页 → 注册账号 → 系统自动初始化默认 Spaces，可以开始用了。
+按 `Ctrl+C` 停止所有服务。
+
+---
+
+### 方式二：Windows 手动启动
+
+**第一步：克隆项目**
+
+```cmd
+git clone https://github.com/lauraNiu/Personal_Diary.git
+cd Personal_Diary
+```
+
+**第二步：配置环境变量**
+
+```cmd
+copy backend\.env.example backend\.env
+```
+
+用记事本打开 `backend\.env`，至少修改 `JWT_SECRET` 为任意随机字符串：
+
+```env
+JWT_SECRET=my-secret-key-change-this
+```
+
+**第三步：启动后端**（新开一个命令提示符 / PowerShell）
+
+```cmd
+cd backend
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+看到 `Uvicorn running on http://0.0.0.0:8000` 即表示后端启动成功。
+
+**第四步：启动前端**（再开一个命令提示符 / PowerShell）
+
+```cmd
+cd frontend
+npm install
+npm run dev
+```
+
+看到 `VITE v* ready` 即表示前端启动成功。
+
+**第五步：访问**
+
+浏览器打开 http://localhost:5173，注册账号即可使用。
+
+---
+
+### 方式三：Mac / Linux 手动启动
+
+```bash
+# 克隆并进入项目
+git clone https://github.com/lauraNiu/Personal_Diary.git
+cd Personal_Diary
+
+# 配置环境变量
+cp backend/.env.example backend/.env
+# 编辑 backend/.env，至少填入 JWT_SECRET
+
+# 后端（终端 1）
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+# 前端（终端 2）
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+### 首次使用
+
+1. 打开 http://localhost:5173
+2. 点击「注册」，填写邮箱 + 密码
+3. 系统自动初始化默认 Spaces（学术 / 工作 / 生活）
+4. 开始使用！
+
+---
+
+## ⚙️ 环境变量说明
+
+`backend/.env` 完整字段，未配置的功能自动降级为 mock 模式，不影响基本使用：
+
+```env
+# 智谱 AI —— Quick Capture / 任务拆解 / 今日计划（不填则用 mock）
+ZHIPU_API_KEY=your_zhipu_api_key_here
+ZHIPU_MODEL=glm-5.1
+
+# Gmail SMTP —— 邮件提醒（不填则关闭邮件功能）
+GMAIL_ADDRESS=your@gmail.com
+GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx   # https://myaccount.google.com/apppasswords
+NOTIFY_EMAIL=your@gmail.com
+
+# Overleaf —— 论文自动同步（不填则关闭同步）
+OVERLEAF_COOKIE=
+
+# 鉴权 —— 必填，生产环境务必改为强随机串
+JWT_SECRET=change-me-to-a-long-random-secret-string-in-production
+JWT_EXPIRE_DAYS=7
+
+# 服务器
+HOST=0.0.0.0
+PORT=8000
+FRONTEND_URL=http://localhost:5173
+
+# 数据存储路径
+DB_PATH=./data/life_os.db
+SNAPSHOT_DIR=./data/snapshots
+```
 
 ---
 
@@ -67,10 +202,43 @@ cd todo-app
 
 ---
 
+## ⌨️ 全局快捷键
+
+| 键 | 功能 |
+|---|---|
+| `Q` | AI Quick Capture（自然语言录入）|
+| `Ctrl+K` / `⌘K` | 全局搜索 |
+| `Ctrl+/` / `⌘/` | 打开帮助 + 快捷键面板 |
+| `Ctrl+1` ~ `Ctrl+9` | 切换 10 种视图 |
+| `Ctrl+[` / `⌘[` | 侧边栏展开/收起 |
+| `F` | 进入专注模式 |
+| `ESC` | 关闭弹窗 / 退出专注 |
+
+---
+
+## 🛠️ 技术栈
+
+| 层 | 技术 |
+|---|------|
+| **前端** | React 19 + Vite + TypeScript + Tailwind CSS |
+| **状态** | Zustand |
+| **拖拽** | @hello-pangea/dnd |
+| **图表** | recharts |
+| **动效** | Framer Motion |
+| **图标** | Lucide React |
+| **后端** | FastAPI + aiosqlite |
+| **数据库** | SQLite（可平滑迁 PostgreSQL）|
+| **AI** | 智谱 GLM-5.1 |
+| **鉴权** | bcrypt + PyJWT |
+| **邮件** | Gmail SMTP（smtplib）|
+| **定时任务** | APScheduler |
+
+---
+
 ## 📁 目录结构
 
 ```
-todo-app/
+Personal_Diary/
 ├── backend/                          # FastAPI + SQLite
 │   ├── main.py
 │   ├── config.py / dependencies.py / models.py / database.py
@@ -79,7 +247,7 @@ todo-app/
 │   │   ├── tasks.py / spaces.py / projects.py / areas.py
 │   │   ├── collaborators.py / papers.py / meetings.py
 │   │   ├── tags.py / journals.py / notifications.py
-│   │   ├── stats.py / ai.py
+│   │   └── stats.py / ai.py
 │   ├── services/
 │   │   ├── ai_service.py             智谱 GLM-5.1 调用
 │   │   ├── auth_service.py           bcrypt + JWT
@@ -87,9 +255,10 @@ todo-app/
 │   │   ├── overleaf_service.py       Cookie 同步
 │   │   └── scheduler.py              APScheduler 定时任务
 │   ├── data/
-│   │   ├── life_os.db                SQLite 数据库
+│   │   ├── life_os.db                SQLite 数据库（自动创建）
 │   │   └── snapshots/                Overleaf 论文快照
-│   ├── .env                          配置（API key 等）
+│   ├── .env                          配置（API key 等，不提交 git）
+│   ├── .env.example                  配置模板
 │   └── requirements.txt
 │
 ├── frontend/                         # React + Vite + TS + Tailwind
@@ -108,79 +277,9 @@ todo-app/
 │   ├── 02_前端设计.md
 │   └── 03_技术架构.md
 │
-├── start.sh                          一键启动脚本
-└── README.md                         本文件
+├── start.sh                          Mac/Linux 一键启动脚本
+└── README.md
 ```
-
----
-
-## ⚙️ 配置
-
-复制示例文件并填入真实配置：
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-`backend/.env` 完整字段：
-
-```env
-# 智谱 AI（已填入，可直接用 GLM-5.1）
-ZHIPU_API_KEY=cdd67b27...
-ZHIPU_MODEL=glm-5.1
-
-# Gmail SMTP（用于邮件提醒）
-GMAIL_ADDRESS=your@gmail.com
-GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx     # https://myaccount.google.com/apppasswords
-NOTIFY_EMAIL=your@gmail.com
-
-# Overleaf（浏览器登录后从 Cookies 里复制 overleaf_session2 等）
-OVERLEAF_COOKIE=...
-
-# 鉴权（生产环境务必改成强随机串！）
-JWT_SECRET=change-me-to-a-long-random-secret
-JWT_EXPIRE_DAYS=7
-
-# 服务器
-HOST=0.0.0.0
-PORT=8000
-FRONTEND_URL=http://localhost:5173
-```
-
-> 未配置的功能会自动降级到 mock 模式，前端仍可使用。
-
----
-
-## ⌨️ 全局快捷键
-
-| 键 | 功能 |
-|---|---|
-| `Q` | AI Quick Capture（自然语言录入）|
-| `⌘K` / `Ctrl+K` | 全局搜索 |
-| `⌘/` | 打开帮助 + 快捷键面板 |
-| `⌘1` ~ `⌘9` | 切换 10 种视图 |
-| `⌘[` | 侧边栏展开/收起 |
-| `F` | 进入专注模式 |
-| `ESC` | 关闭弹窗 / 退出专注 |
-
----
-
-## 🛠️ 技术栈
-
-| 层 | 技术 |
-|---|------|
-| **前端** | React 18 + Vite + TypeScript + Tailwind CSS |
-| **状态** | Zustand |
-| **拖拽** | @hello-pangea/dnd |
-| **图表** | recharts |
-| **动效** | Framer Motion |
-| **图标** | Lucide React |
-| **后端** | FastAPI + aiosqlite |
-| **数据库** | SQLite（可平滑迁 PostgreSQL）|
-| **AI** | 智谱 GLM-5.1（zai-sdk）|
-| **鉴权** | bcrypt + PyJWT |
-| **邮件** | Gmail SMTP（smtplib）|
-| **定时任务** | APScheduler |
 
 ---
 
@@ -189,22 +288,22 @@ FRONTEND_URL=http://localhost:5173
 ### 1. 服务器准备
 
 ```bash
-# 安装 Python 3.12 + Node 18+
-# 克隆代码到服务器
-git clone <repo> /opt/life-os
+git clone https://github.com/lauraNiu/Personal_Diary.git /opt/life-os
 cd /opt/life-os
 ```
 
-### 2. 改配置
+### 2. 配置
 
 ```bash
+cp backend/.env.example backend/.env
+
 # 生成强 JWT secret
-python3 -c "import secrets; print(secrets.token_urlsafe(64))" > /tmp/jwt
+python3 -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
 修改 `backend/.env`：
 - `JWT_SECRET` = 上面生成的值
-- `FRONTEND_URL` = 你的域名（如 https://life-os.example.com）
+- `FRONTEND_URL` = 你的域名（如 `https://life-os.example.com`）
 
 ### 3. 收紧 CORS
 
@@ -213,7 +312,7 @@ python3 -c "import secrets; print(secrets.token_urlsafe(64))" > /tmp/jwt
 ```python
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://life-os.example.com"],   # 替换为你的域名
+    allow_origins=["https://life-os.example.com"],
     ...
 )
 ```
@@ -230,20 +329,27 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/opt/life-os/todo-app/backend
-ExecStart=/opt/life-os/todo-app/backend/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+WorkingDirectory=/opt/life-os/backend
+ExecStart=/opt/life-os/backend/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
 
+```bash
+systemctl enable life-os && systemctl start life-os
+```
+
 ### 5. 前端构建 + Nginx
 
 ```bash
-cd frontend && npm run build       # 产物在 dist/
+cd frontend && npm install && npm run build   # 产物在 dist/
+```
 
-# Nginx 配置
+Nginx 配置：
+
+```nginx
 server {
     listen 443 ssl;
     server_name life-os.example.com;
@@ -252,15 +358,11 @@ server {
         proxy_pass http://127.0.0.1:8000;
     }
     location / {
-        root /opt/life-os/todo-app/frontend/dist;
+        root /opt/life-os/frontend/dist;
         try_files $uri /index.html;
     }
 }
 ```
-
-### 6.（可选）迁 PostgreSQL
-
-数据模型完全兼容，把 `aiosqlite` 换成 `asyncpg` + 调整连接字符串即可。
 
 ---
 
@@ -268,11 +370,36 @@ server {
 
 ```bash
 # 数据库
-cp todo-app/backend/data/life_os.db ~/backup/life_os_$(date +%Y%m%d).db
+cp backend/data/life_os.db ~/backup/life_os_$(date +%Y%m%d).db
 
 # Overleaf 快照
-tar czf ~/backup/snapshots_$(date +%Y%m%d).tar.gz todo-app/backend/data/snapshots/
+tar czf ~/backup/snapshots_$(date +%Y%m%d).tar.gz backend/data/snapshots/
 ```
+
+---
+
+## 🐛 常见问题
+
+**Q: 后端启动报 `ModuleNotFoundError`？**  
+A: 确认在 `backend/` 目录下执行 `pip install -r requirements.txt`，且使用的是 Python 3.10+。
+
+**Q: 前端访问 API 报 CORS 错误？**  
+A: 确认后端已正常启动（`http://localhost:8000/docs` 可访问），且前端运行在 `localhost:5173`。
+
+**Q: AI 解析返回 mock 内容？**  
+A: 检查 `backend/.env` 中 `ZHIPU_API_KEY` 是否正确填入，重启后端。
+
+**Q: 邮件发送失败？**  
+A: Gmail 必须开两步验证，然后用 [App Passwords](https://myaccount.google.com/apppasswords) 生成 16 位专用密码，不能用账户密码。
+
+**Q: Overleaf 同步报 401？**  
+A: Cookie 过期了，重新在浏览器登录 Overleaf，从开发者工具复制完整 Cookie 串更新到 `.env`。
+
+**Q: 重置数据库？**  
+A: 停止服务后删除 `backend/data/life_os.db`，下次启动自动重建。
+
+**Q: Windows 下 `./start.sh` 无法运行？**  
+A: `start.sh` 仅支持 Mac/Linux。Windows 请按上方「方式二」手动启动。
 
 ---
 
@@ -283,25 +410,6 @@ tar czf ~/backup/snapshots_$(date +%Y%m%d).tar.gz todo-app/backend/data/snapshot
 | [`docs/01_产品设计.md`](docs/01_产品设计.md) | 三大空间、任务属性、AI 能力、邮件、Overleaf |
 | [`docs/02_前端设计.md`](docs/02_前端设计.md) | 设计系统、Tooltip、快捷键、动效、Onboarding |
 | [`docs/03_技术架构.md`](docs/03_技术架构.md) | 目录结构、数据库、API 路由、AI Prompt |
-
----
-
-## 🐛 常见问题
-
-**Q: AI 解析返回 mock 内容？**  
-A: 检查 `backend/.env` 中 `ZHIPU_API_KEY` 是否正确填入，重启后端。
-
-**Q: 邮件发送失败？**  
-A: Gmail 必须开两步验证，然后用 [App Passwords](https://myaccount.google.com/apppasswords) 生成 16 位专用密码，不能用账户密码。
-
-**Q: Overleaf 同步报 401？**  
-A: Cookie 过期了，重新在浏览器登录 Overleaf，从开发者工具复制完整 Cookie 串。
-
-**Q: 启动失败 "claude-agent-sdk requires Python >=3.10"？**  
-A: 系统 Python 是 3.9，用 `uv` 装 Python 3.12（`start.sh` 已自动处理）。
-
-**Q: 重置数据库？**  
-A: 停服务后 `rm backend/data/life_os.db` 即可，下次启动自动重建。
 
 ---
 
