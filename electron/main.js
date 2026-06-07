@@ -11,6 +11,25 @@ const HEALTH_INTERVAL_MS = 500;
 
 let mainWindow = null;
 let backendProcess = null;
+let logStream = null;
+
+function initLog() {
+  const logDir = path.join(app.getPath('userData'), 'logs');
+  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+  logStream = fs.createWriteStream(path.join(logDir, 'main.log'), { flags: 'a' });
+}
+
+function log(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}`;
+  console.log(line);
+  if (logStream) logStream.write(line + '\n');
+}
+
+function logErr(msg) {
+  const line = `[${new Date().toISOString()}] ERROR: ${msg}`;
+  console.error(line);
+  if (logStream) logStream.write(line + '\n');
+}
 
 // ─── 工具函数 ─────────────────────────────────────────────────
 
@@ -67,8 +86,8 @@ function startBackend() {
       FRONTEND_URL: `file://${__dirname}/renderer/index.html`,
     };
 
-    console.log(`[Backend] Starting: ${exe}`);
-    console.log(`[Backend] AppData: ${appDataDir}`);
+    log(`[Backend] Starting: ${exe}`);
+    log(`[Backend] AppData: ${appDataDir}`);
 
     backendProcess = spawn(exe, [], {
       env,
@@ -76,16 +95,16 @@ function startBackend() {
       detached: false,
     });
 
-    backendProcess.stdout.on('data', (d) => console.log('[Backend]', d.toString().trim()));
-    backendProcess.stderr.on('data', (d) => console.error('[Backend]', d.toString().trim()));
+    backendProcess.stdout.on('data', (d) => log('[Backend] ' + d.toString().trim()));
+    backendProcess.stderr.on('data', (d) => logErr('[Backend] ' + d.toString().trim()));
 
     backendProcess.on('error', (err) => {
-      console.error('[Backend] Failed to start:', err);
+      logErr('[Backend] Failed to start: ' + err.message);
       reject(err);
     });
 
     backendProcess.on('exit', (code) => {
-      console.log(`[Backend] Exited with code ${code}`);
+      log(`[Backend] Exited with code ${code}`);
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.executeJavaScript(
           `document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666"><div style="text-align:center"><h2>后端服务已停止</h2><p>请重启应用</p></div></div>'`
@@ -111,7 +130,7 @@ function waitForBackend() {
 
       const req = http.get(HEALTH_URL, { timeout: 2000 }, (res) => {
         if (res.statusCode === 200) {
-          console.log('[Backend] Ready!');
+          log('[Backend] Ready!');
           resolve();
         } else {
           setTimeout(check, HEALTH_INTERVAL_MS);
@@ -151,7 +170,10 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
   }
 
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    mainWindow.webContents.openDevTools(); // 临时调试用
+  });
 
   // 外部链接在系统浏览器打开
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -182,6 +204,11 @@ function createLoadingWindow() {
 // ─── App 生命周期 ─────────────────────────────────────────────
 
 app.whenReady().then(async () => {
+  initLog();
+  log('[App] Starting Personal Life OS');
+  log(`[App] resourcesPath: ${process.resourcesPath}`);
+  log(`[App] appPath: ${app.getAppPath()}`);
+  log(`[App] userData: ${app.getPath('userData')}`);
   const loadingWin = createLoadingWindow();
 
   try {
@@ -191,7 +218,7 @@ app.whenReady().then(async () => {
     createWindow();
   } catch (err) {
     loadingWin.close();
-    console.error('[App] Startup failed:', err);
+    logErr('[App] Startup failed: ' + err.message);
     dialog.showErrorBox('启动失败', err.message || '未知错误，请重试。');
     app.quit();
   }
@@ -210,7 +237,7 @@ app.on('before-quit', killBackend);
 
 function killBackend() {
   if (backendProcess && !backendProcess.killed) {
-    console.log('[Backend] Killing process...');
+    log('[Backend] Killing process...');
     if (process.platform === 'win32') {
       spawn('taskkill', ['/pid', String(backendProcess.pid), '/f', '/t']);
     } else {
