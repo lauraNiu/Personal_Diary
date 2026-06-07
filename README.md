@@ -6,7 +6,20 @@
 
 ---
 
-## 🚀 快速开始
+## 📦 下载桌面应用（推荐）
+
+无需安装 Python / Node.js，双击即用：
+
+| 平台 | 下载 | 说明 |
+|------|------|------|
+| Windows 10/11 | [Releases 页面](https://github.com/lauraNiu/Personal_Diary/releases/latest) 下载 `*-Setup-*.exe` | 双击安装，按向导完成 |
+| macOS 12+ | [Releases 页面](https://github.com/lauraNiu/Personal_Diary/releases/latest) 下载 `*.dmg` | 打开 dmg，拖入 Applications |
+
+> macOS 首次打开如提示"无法验证开发者"：右键 → 打开 → 确认打开。
+
+---
+
+## 🚀 开发者本地运行
 
 ### 前提条件
 

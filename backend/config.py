@@ -1,10 +1,17 @@
 """配置加载，从 .env 读取。"""
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
+# PyInstaller 打包后 __file__ 在临时目录，用 sys.executable 同级目录存数据
+if getattr(sys, 'frozen', False):
+    _exe_dir = Path(sys.executable).parent
+    BASE_DIR = Path(os.environ.get('APP_DATA_DIR', str(_exe_dir)))
+    load_dotenv(BASE_DIR / ".env")
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+    load_dotenv(BASE_DIR / ".env")
 
 
 class Config:
