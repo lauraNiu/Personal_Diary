@@ -32,13 +32,17 @@
     },
     "files": [
       "main.js",
-      "preload.js",
-      "renderer/**/*"
+      "preload.js"
     ],
     "extraResources": [
       {
         "from": "../backend/dist/backend",
         "to": "backend",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "renderer",
+        "to": "renderer",
         "filter": ["**/*"]
       }
     ],

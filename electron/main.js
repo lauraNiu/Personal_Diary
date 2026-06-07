@@ -34,7 +34,8 @@ function getBackendExecutable() {
 
 function getRendererPath() {
   if (app.isPackaged) {
-    return path.join(__dirname, 'renderer', 'index.html');
+    // 打包后 renderer/ 在 app.asar 同级目录，不在 asar 内部
+    return path.join(path.dirname(app.getAppPath()), 'renderer', 'index.html');
   }
   return null; // 开发时加载 Vite dev server
 }
