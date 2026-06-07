@@ -2,6 +2,11 @@
   "name": "personal-life-os",
   "version": "1.0.0",
   "description": "AI 驱动的个人生命周期管理系统",
+  "author": "luyaoniu <luyao0160@163.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lauraNiu/Personal_Diary.git"
+  },
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -17,6 +22,11 @@
     "appId": "com.luyaoniu.personal-life-os",
     "productName": "Personal Life OS",
     "copyright": "Copyright © 2026 luyaoniu",
+    "publish": {
+      "provider": "github",
+      "owner": "lauraNiu",
+      "repo": "Personal_Diary"
+    },
     "directories": {
       "output": "dist"
     },
@@ -33,24 +43,19 @@
       }
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "build/icon.ico"
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "mac": {
       "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
-      "icon": "build/icon.icns",
       "category": "public.app-category.productivity"
     },
     "linux": {
       "target": [{ "target": "AppImage", "arch": ["x64"] }],
-      "icon": "build/icon.png",
       "category": "Office"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "build/icon.ico",
-      "uninstallerIcon": "build/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     },
