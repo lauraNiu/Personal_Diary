@@ -97,13 +97,26 @@ jobs:
           pip install pyinstaller
           pyinstaller backend.spec --distpath dist/ --workpath build/ --clean --noconfirm
 
-      - name: Build Electron app (macOS)
+      - name: Check PyInstaller output
+        run: |
+          echo "=== backend/dist/ contents ==="
+          ls -la backend/dist/ || echo "dist/ not found"
+          echo "=== backend/dist/backend/ contents ==="
+          ls -la backend/dist/backend/ || echo "backend/ not found"
+          echo "=== electron/renderer/ contents ==="
+          ls -la electron/renderer/ || echo "renderer/ not found"
+
+      - name: Build Electron app (macOS x64 only)
         working-directory: electron
         run: |
           npm install
-          npx electron-builder --mac
+          npx electron-builder --mac --x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List electron dist
+        if: always()
+        run: ls -la electron/dist/ || echo "electron/dist/ empty or not found"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
