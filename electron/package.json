@@ -20,7 +20,7 @@
   },
   "build": {
     "appId": "com.luyaoniu.personal-life-os",
-    "productName": "Personal Life OS",
+    "productName": "PersonalLifeOS",
     "copyright": "Copyright © 2026 luyaoniu",
     "publish": {
       "provider": "github",
@@ -64,7 +64,7 @@
       "createStartMenuShortcut": true
     },
     "dmg": {
-      "title": "Personal Life OS",
+      "title": "PersonalLifeOS",
       "contents": [
         { "x": 130, "y": 220 },
         { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
